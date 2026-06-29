@@ -1,27 +1,30 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import Home from './pages/Home';
-import NotFound from './pages/404';
+import Layout from './components/Layout';
 
+// Pages
+import Wallet from './pages/Wallet';
 import TaskList from './pages/tasks/TaskList';
 import TaskUpload from './pages/tasks/TaskUpload';
-
+import TaskVerify from './pages/tasks/TaskVerify';
+import NotFound from './pages/404';
 
 const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Home */}
-        <Route path='/' element={<Home />} />
-  
-        {/* Task Page */}
-        <Route path='/task/upload' element={<TaskUpload />} />
-        <Route path="/task" element={<TaskList />} />
+        {/* All main pages share the bottom-bar layout */}
+        <Route element={<Layout />}>
+          <Route path="/" element={<Wallet />} />
+          <Route path="/task" element={<TaskList />} />
+          <Route path="/task/upload" element={<TaskUpload />} />
+          <Route path="/task/verify" element={<TaskVerify />} />
+        </Route>
 
-        {/* 404 Page */}
-        <Route path='*' element={<NotFound />} />
+        {/* 404 — no bottom bar */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
-  )
-}
+  );
+};
 
-export default App
+export default App;
