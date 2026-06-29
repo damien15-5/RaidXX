@@ -1,19 +1,19 @@
 import { useState } from 'react';
 
-// ── Types ──────────────────────────────────────────────────────────────────────
+// Types
 type TxType = 'topup' | 'withdraw';
 
 interface Transaction {
   id: number;
   type: TxType;
-  date: string;       // e.g. "Oct 24, 2023"
-  time: string;       // e.g. "14:30"
-  wallet: string;     // full wallet address
+  date: string; // e.g. "Oct 24, 2023"
+  time: string; // e.g. "14:30"
+  wallet: string; // full wallet address
   usdtAmount: number; // only for topup (USDT sent in)
-  points: number;     // only for withdraw (points redeemed)
+  points: number; // only for withdraw (points redeemed)
 }
 
-// ── Mock history data ──────────────────────────────────────────────────────────
+// Mock history data 
 // Top up  → user sends USDT in  → receives points  (shown as $xx.xx)
 // Withdraw → user redeems points → receives USDT    (shown as xxx pts)
 const HISTORY: Transaction[] = [
@@ -109,18 +109,13 @@ const HISTORY: Transaction[] = [
   },
 ];
 
-// Shorten wallet: 0x7a21...f9e2
-const shortWallet = (addr: string) =>
-  `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-
-// ── Component ──────────────────────────────────────────────────────────────────
 const Wallet = () => {
   const [balanceHidden, setBalanceHidden] = useState(false);
 
   return (
     <div className="min-h-screen bg-surface">
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
+      {/* Header */}
       <header className="flex fixed top-0 left-0 right-0 z-10 w-full p-3 items-center justify-between bg-white/80 backdrop-blur-md border-b border-gray-100/50">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-brand-500 to-blue-400 flex items-center justify-center text-white text-sm font-bold">
