@@ -1,10 +1,3 @@
-/**
- * SocialForm.tsx
- * --------------
- * Form sheet for configuring a social sub-task.
- * Collects: target URL + order count.
- * Calls onSave() with a complete SocialSubTask object.
- */
 
 import { useState } from 'react';
 import type { SocialTaskName, SocialSubTask } from '../types';

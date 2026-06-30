@@ -1,14 +1,3 @@
-/**
- * SocialPicker.tsx
- * ----------------
- * Second sheet shown after choosing "Social Task".
- * Lists all available social task types with their per-1k price.
- *
- * To add a new social task type:
- *   1. Add it to SocialTaskName in types.ts
- *   2. Add its price in SOCIAL_PRICE_PER_1K in pricing.ts
- *   3. Add its display entry in SOCIAL_TASKS in pricing.ts
- */
 
 import type { SocialTaskName } from '../types';
 import { SOCIAL_TASKS, SOCIAL_PRICE_PER_1K, fmtPts } from '../pricing';

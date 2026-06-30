@@ -1,9 +1,3 @@
-/**
- * types.ts
- * --------
- * All TypeScript types shared across TaskUpload and TaskList.
- * Edit this file to add new task types or change the bundle shape.
- */
 
 // Social task kinds
 export type SocialTaskName =

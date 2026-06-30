@@ -1,15 +1,3 @@
-/**
- * BundleDetail.tsx
- * ----------------
- * Bottom sheet that shows the full task thread for a bundle.
- * Opens when the user taps a BundleCard.
- *
- * Shows each sub-task in thread order with:
- *  - Social tasks: icon, type label, clickable URL, order count
- *  - Quests: question text, answer options, custom-answer indicator
- *  - "Start Tasks" CTA (only for active bundles)
- */
-
 import type { TaskBundle, SocialSubTask, QuestSubTask } from '../types';
 import BottomSheet from '../BottomSheet';
 
@@ -38,7 +26,7 @@ const BundleDetail = ({ bundle, onClose }: BundleDetailProps) => {
 
   return (
     <BottomSheet onClose={onClose}>
-      {/* ── Header: status + wallet + close ── */}
+      {/*  Header: status + wallet + close  */}
       <div className="flex items-center justify-between mb-4">
         <div>
           <span className={`
@@ -63,7 +51,7 @@ const BundleDetail = ({ bundle, onClose }: BundleDetailProps) => {
         </button>
       </div>
 
-      {/* ── Task thread ── */}
+      {/*  Task thread  */}
       <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-wider mb-3">
         Task Thread
       </p>

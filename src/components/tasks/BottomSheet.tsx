@@ -1,19 +1,7 @@
-/**
- * BottomSheet.tsx
- * ---------------
- * Reusable sliding bottom sheet with a dim backdrop.
- * Used by TypeSelector, SocialPicker, SocialForm, QuestForm, BundleDetail.
- *
- * z-index stack:
- *   BottomBar nav     → z-50
- *   Action bar        → z-[55]
- *   Sheet backdrop    → z-[60]  ← covers the navbar when a sheet is open
- *   Sheet panel       → z-[70]
- */
 
 interface BottomSheetProps {
   children: React.ReactNode;
-  onClose: () => void; // called when user taps the backdrop
+  onClose: () => void;
 }
 
 const BottomSheet = ({ children, onClose }: BottomSheetProps) => {

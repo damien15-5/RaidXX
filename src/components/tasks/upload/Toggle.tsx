@@ -1,9 +1,3 @@
-/**
- * Toggle.tsx
- * ----------
- * Simple on/off toggle switch.
- * Used inside QuestForm for "allow custom answer" and "multi-select" options.
- */
 
 interface ToggleProps {
   label: string;

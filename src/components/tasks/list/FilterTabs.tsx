@@ -1,10 +1,3 @@
-/**
- * FilterTabs.tsx
- * --------------
- * All / Active / Submitted filter tabs for the TaskList page.
- * The active tab is highlighted in brand colour.
- */
-
 export type FilterTab = 'all' | 'active' | 'submitted';
 
 interface FilterTabsProps {

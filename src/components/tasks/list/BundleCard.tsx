@@ -1,21 +1,6 @@
-/**
- * BundleCard.tsx
- * --------------
- * Summary card for a task bundle shown in the TaskList grid.
- * Tapping it opens the BundleDetail sheet.
- *
- * Shows:
- *  - Status badge (active / submitted)
- *  - Time since created
- *  - Poster wallet address
- *  - Sub-task pills (type + count)
- *  - Total order count
- *  - Social / quest breakdown
- */
-
 import type { TaskBundle, SocialSubTask, QuestSubTask } from '../types';
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helpers
 
 // Format large counts: 1500 → "1.5k", 2_000_000 → "2.0M"
 const fmtCount = (n: number) =>
@@ -42,7 +27,7 @@ const SOCIAL_META: Record<string, { color: string; bg: string; icon: string; lab
   QUOTE:   { label: 'Quote',   icon: 'fa-quote-right',  color: 'text-purple-500', bg: 'bg-purple-50 border-purple-100' },
 };
 
-// ── Small pill shown on the card for each sub-task ────────────────────────────
+// Small pill shown on the card for each sub-task
 const SubTaskPill = ({ task }: { task: TaskBundle['tasks_data'][number] }) => {
   if (task.type === 'QUEST') {
     const q = task as QuestSubTask;
@@ -72,7 +57,7 @@ const SubTaskPill = ({ task }: { task: TaskBundle['tasks_data'][number] }) => {
   );
 };
 
-// ── Main card ─────────────────────────────────────────────────────────────────
+// Main card
 interface BundleCardProps {
   bundle: TaskBundle;
   onClick: () => void;
@@ -89,7 +74,7 @@ const BundleCard = ({ bundle, onClick }: BundleCardProps) => {
       onClick={onClick}
       className="w-full text-left bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-[0.99] group"
     >
-      {/* ── Top section ── */}
+      {/* Top section */}
       <div className="px-4 pt-4 pb-3 flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           {/* Status badge + time */}
@@ -120,14 +105,14 @@ const BundleCard = ({ bundle, onClick }: BundleCardProps) => {
         </div>
       </div>
 
-      {/* ── Sub-task pills ── */}
+      {/* Sub-task pills */}
       <div className="px-4 pb-3 flex flex-wrap gap-1.5">
         {bundle.tasks_data.map((t) => (
           <SubTaskPill key={t.sub_task_id} task={t} />
         ))}
       </div>
 
-      {/* ── Footer meta row ── */}
+      {/* Footer meta row */}
       <div className="px-4 py-2.5 bg-gray-50/70 border-t border-gray-100/60 flex items-center justify-between">
         <div className="flex items-center gap-3 text-[10px] text-gray-400 font-semibold">
           {socialCount > 0 && (

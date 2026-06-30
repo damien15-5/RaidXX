@@ -1,9 +1,4 @@
-/**
- * TypeSelector.tsx
- * ----------------
- * First sheet shown when the user taps "+ Add".
- * Lets the user choose between a Social Task or a Quest.
- */
+
 
 import BottomSheet from '../BottomSheet';
 

@@ -1,16 +1,3 @@
-/**
- * mockData.ts
- * -----------
- * Sample task bundles for the TaskList page.
- * Replace this with real Supabase fetches when ready.
- *
- * Schema mirrors the `tasks` table:
- *   bundle_id  → tasks.id  (UUID)
- *   posted_by  → tasks.posted_by (user wallet)
- *   status     → task_bundle_status enum
- *   tasks_data → JSONB array of sub-tasks
- */
-
 import type { TaskBundle } from '../types';
 
 export const MOCK_BUNDLES: TaskBundle[] = [

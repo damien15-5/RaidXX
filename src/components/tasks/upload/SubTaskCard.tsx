@@ -1,10 +1,3 @@
-/**
- * SubTaskCard.tsx
- * ---------------
- * A single sub-task card displayed in the thread on TaskUpload.
- * Social tasks show blue styling; Quests show violet.
- * Cards are connected by a vertical line to look like a thread.
- */
 
 import type { SubTask, SocialSubTask, QuestSubTask } from '../types';
 import { SOCIAL_TASKS, calcFee, fmtPts } from '../pricing';

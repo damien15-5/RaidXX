@@ -1,11 +1,3 @@
-/**
- * CountInput.tsx
- * --------------
- * Stepper input for order count (- / input field / +).
- * Min: 1  |  Max: 1,000,000
- * Shows the calculated fee below the stepper.
- */
-
 import { clampCount, fmtPts } from '../pricing';
 
 interface CountInputProps {

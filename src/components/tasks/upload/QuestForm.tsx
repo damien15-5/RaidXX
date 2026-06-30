@@ -1,10 +1,4 @@
-/**
- * QuestForm.tsx
- * -------------
- * Form sheet for configuring a quest sub-task.
- * Collects: question text, answer options (min 2), toggles, order count.
- * Calls onSave() with a complete QuestSubTask object.
- */
+
 
 import { useState } from 'react';
 import type { QuestSubTask } from '../types';

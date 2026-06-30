@@ -1,9 +1,3 @@
-/**
- * pricing.ts
- * ----------
- * Pricing rates and helper functions for calculating task fees.
- * Edit the numbers here to change prices — they flow everywhere automatically.
- */
 
 import type { SocialTaskName } from './types';
 
