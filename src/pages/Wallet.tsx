@@ -34,7 +34,7 @@ const Wallet = () => {
   const [balanceHidden, setBalanceHidden] = useState(false);
   const [walletBalance, setWalletBalance] = useState(0);
   const [dbBalance, setDbBalance] = useState(0);
-  const [dbPoints, setDbPoints] = useState(0);
+  const [_dbPoints, setDbPoints] = useState(0);
   const [loadingData, setLoadingData] = useState(true);
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [treasuryAddress, setTreasuryAddress] = useState<string | null>(null);
@@ -334,13 +334,13 @@ const Wallet = () => {
               <i className="fa-solid fa-arrow-up" />
               Withdraw
             </button>
-            <Link
+            {/* <Link
               to="/faucet"
               className="flex flex-1 justify-center items-center gap-1.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold px-3 py-3 rounded-2xl transition-all active:scale-98 text-center"
             >
               <i className="fa-solid fa-droplet" />
               Faucet
-            </Link>
+            </Link> */}
           </div>
         </div>
 

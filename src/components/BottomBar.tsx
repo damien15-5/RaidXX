@@ -1,11 +1,14 @@
 import { NavLink } from 'react-router-dom';
 
+// end: true → NavLink only applies the active style when the URL is an EXACT match.
+// Without this, '/task' would also highlight when you're on '/task/upload' or '/task/verify'.
 const tabs = [
-  { to: '/', icon: 'fa-solid fa-wallet', label: 'Wallet' },
-  { to: '/task', icon: 'fa-solid fa-list-check', label: 'Tasks' },
-  { to: '/task/upload', icon: 'fa-solid fa-circle-plus', label: 'Upload' },
-  { to: '/task/verify', icon: 'fa-solid fa-shield-halved', label: 'Verify' },
+  { to: '/',            icon: 'fa-solid fa-wallet',        label: 'Wallet', end: true },
+  { to: '/task',        icon: 'fa-solid fa-list-check',    label: 'Tasks',  end: true },
+  { to: '/task/upload', icon: 'fa-solid fa-circle-plus',   label: 'Upload', end: true },
+  { to: '/task/verify', icon: 'fa-solid fa-shield-halved', label: 'Verify', end: true },
 ];
+
 
 const BottomBar = () => {
   return (
@@ -14,11 +17,11 @@ const BottomBar = () => {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-stretch max-w-lg mx-auto">
-        {tabs.map(({ to, icon, label }) => (
+        {tabs.map(({ to, icon, label, end }) => (
           <NavLink
             key={to}
             to={to}
-            end={to === '/'}
+            end={end}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center flex-1 gap-1 py-3 text-xs font-medium transition-colors
                ${isActive
