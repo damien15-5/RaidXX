@@ -6,6 +6,7 @@ import Wallet from './pages/Wallet';
 import TaskList from './pages/tasks/TaskList';
 import TaskUpload from './pages/tasks/TaskUpload';
 import TaskVerify from './pages/tasks/TaskVerify';
+import Faucet from './pages/Faucet';
 import NotFound from './pages/404';
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/task" element={<TaskList />} />
           <Route path="/task/upload" element={<TaskUpload />} />
           <Route path="/task/verify" element={<TaskVerify />} />
+          <Route path="/faucet" element={<Faucet />} />
         </Route>
 
         {/* 404 — no bottom bar */}
@@ -27,4 +29,4 @@ const App = () => {
   );
 };
 
-export default App;
+export default App;

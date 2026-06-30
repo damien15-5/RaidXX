@@ -1,0 +1,29 @@
+﻿
+
+    Directory: C:\Users\user\Desktop\raidX for uniben\RaidX
+
+
+Mode                 LastWriteTime         Length Name                                                                 
+----                 -------------         ------ ----                                                                 
+d--h--         6/30/2026   5:01 AM                .git                                                                 
+d-----         6/30/2026   2:32 AM                backend                                                              
+d-----         6/28/2026   5:40 PM                dist                                                                 
+d-----         6/30/2026   3:42 AM                node_modules                                                         
+d-----         6/28/2026   5:13 PM                public                                                               
+d-----         6/30/2026   3:24 AM                src                                                                  
+d-----         6/30/2026   2:30 AM                supabase                                                             
+-a----         6/30/2026   3:26 AM            387 .env                                                                 
+-a----         6/30/2026   3:44 AM            258 .env.example                                                         
+-a----         6/30/2026   2:30 AM            341 .gitignore                                                           
+-a----         6/30/2026   5:01 AM              0 dir_out.txt                                                          
+-a----         6/28/2026   5:13 PM            613 eslint.config.js                                                     
+-a----         6/30/2026   2:16 AM            803 index.html                                                           
+-a----         6/30/2026   3:42 AM         287666 package-lock.json                                                    
+-a----         6/30/2026   3:42 AM           1464 package.json                                                         
+-a----         6/28/2026   5:13 PM           2502 README.md                                                            
+-a----         6/28/2026   5:13 PM            642 tsconfig.app.json                                                    
+-a----         6/28/2026   5:13 PM            126 tsconfig.json                                                        
+-a----         6/28/2026   5:13 PM            581 tsconfig.node.json                                                   
+-a----         6/30/2026   3:27 AM            479 vite.config.ts                                                       
+
+
