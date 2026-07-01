@@ -1,34 +1,17 @@
-import { SOCIAL_TASKS, SOCIAL_PRICE_PER_1K, QUEST_PRICE_PER_1K, fmtPts } from '../pricing';
-
 const PricingCard = () => (
   <div className="mt-4 bg-white rounded-2xl border border-gray-100 p-4">
-    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">
-      Pricing (per 1k orders)
+    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2">
+      Self-Serve Ad Network Fees
     </p>
-
-    <div className="grid grid-cols-2 gap-y-2 gap-x-4">
-      {/* Social task prices */}
-      {SOCIAL_TASKS.map((t) => (
-        <div key={t.name} className="flex items-center gap-2">
-          <i className={`fa-solid ${t.icon} text-[10px] text-sky-400 w-3`} />
-          <span className="text-[10px] text-gray-600 font-semibold truncate">
-            {/* Strip " X " from label for brevity */}
-            {t.label.replace(' X ', ' ')}
-          </span>
-          <span className="ml-auto text-[10px] font-bold text-sky-500 shrink-0">
-            {fmtPts(SOCIAL_PRICE_PER_1K[t.name])}
-          </span>
-        </div>
-      ))}
-
-      {/* Quest price */}
-      <div className="flex items-center gap-2">
-        <i className="fa-solid fa-circle-question text-[10px] text-violet-400 w-3" />
-        <span className="text-[10px] text-gray-600 font-semibold">Quest</span>
-        <span className="ml-auto text-[10px] font-bold text-brand-600">
-          {fmtPts(QUEST_PRICE_PER_1K)}
-        </span>
+    <div className="text-xs text-gray-600 font-semibold leading-relaxed">
+      You define the reward points for each task completion individually (minimum <span className="font-bold text-brand-600">5 PTS</span>). 
+      The total cost is calculated as:
+      <div className="bg-gray-50 border border-gray-100 rounded-xl p-2.5 mt-2 font-mono text-[11px] text-slate-800 text-center font-bold">
+        Points per completion × Solver count
       </div>
+      <p className="text-[10px] text-gray-400 mt-2 font-medium">
+        10,000 PTS equals 1.0 SOL. Incomplete/cancelled tasks will be refunded directly back to your balance.
+      </p>
     </div>
   </div>
 );

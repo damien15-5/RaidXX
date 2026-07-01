@@ -27,8 +27,9 @@ const QuestForm = ({ onSave, onClose }: QuestFormProps) => {
   const [allowCustom, setAllowCustom] = useState(false);
   const [multiSelect, setMultiSelect] = useState(false);
   const [count, setCount] = useState(100);
+  const [points, setPoints] = useState(5); // default points per completion
 
-  const fee = calcFee('QUEST', null, count);
+  const fee = calcFee('QUEST', null, count, points);
 
   // Option helpers
   const addOption    = () => setOptions((o) => [...o, { id: uid(), text: '' }]);
@@ -50,8 +51,9 @@ const QuestForm = ({ onSave, onClose }: QuestFormProps) => {
       allow_custom_answer: allowCustom,
       multiple_options_select: multiSelect,
       count,
+      points,
       status: 'active',
-    });
+    } as any);
   };
 
   return (
@@ -141,13 +143,27 @@ const QuestForm = ({ onSave, onClose }: QuestFormProps) => {
           />
         </div>
 
+        {/* Points per completion input */}
+        <div>
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+            Points per completion (default: 5)
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={points}
+            onChange={(e) => setPoints(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-3 text-xs font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all font-mono"
+          />
+        </div>
+
         {/* Order count stepper */}
         <CountInput
           label="Number of responses"
           value={count}
           onChange={setCount}
           fee={fee}
-          rateLabel={`${fmtPts(QUEST_PRICE_PER_1K)} PTS / 1k`}
+          rateLabel={`${points} PTS per completion`}
         />
       </div>
 

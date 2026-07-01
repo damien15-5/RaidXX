@@ -23,6 +23,7 @@
  */
 
 import { useState, useCallback } from 'react';
+import { useWallet } from '@solana/wallet-adapter-react';
 import type { SubTask, SocialSubTask, SocialTaskName } from '../../components/tasks/types';
 import { calcFee, fmtPts } from '../../components/tasks/pricing';
 
@@ -33,6 +34,15 @@ import SocialForm from '../../components/tasks/upload/SocialForm';
 import QuestForm from '../../components/tasks/upload/QuestForm';
 import SubTaskCard from '../../components/tasks/upload/SubTaskCard';
 import PricingCard from '../../components/tasks/upload/PricingCard';
+
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+const FN_HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+};
 
 // ── Sheet state type ──────────────────────────────────────────────────────────
 // Tracks which sheet is open and with what context.
@@ -53,6 +63,7 @@ const RaidXLogo = () => (
 );
 
 const TaskUpload = () => {
+  const { publicKey } = useWallet();
   const [subTasks, setSubTasks] = useState<SubTask[]>([]);
   const [sheet, setSheet] = useState<SheetState>('none');
   const [posting, setPosting] = useState(false);
@@ -60,14 +71,14 @@ const TaskUpload = () => {
 
   // Total PTS fee across all sub-tasks
   const totalFee = subTasks.reduce(
-    (acc, t) => acc + calcFee(t.type, t.type === 'SOCIAL' ? (t as SocialSubTask).task_name : null, t.count),
+    (acc, t: any) => acc + (t.points || 5) * t.count,
     0,
   );
 
   // Toast helper
   const showToast = (text: string, ok = true) => {
     setToast({ text, ok });
-    setTimeout(() => setToast(null), 3500);
+    setTimeout(() => setToast(null), 3550);
   };
 
   // Add / remove sub-tasks
@@ -75,29 +86,42 @@ const TaskUpload = () => {
   const removeTask = useCallback((id: string) => { setSubTasks((prev) => prev.filter((t) => t.sub_task_id !== id)); }, []);
 
   // Post the bundle
-  // TODO: replace the console.log with a Supabase insert when backend is ready.
-  const handlePost = () => {
-    if (subTasks.length === 0) { showToast('Add at least one task first.', false); return; }
+  const handlePost = async () => {
+    if (!publicKey) {
+      showToast('Please connect your wallet first.', false);
+      return;
+    }
+    if (subTasks.length === 0) {
+      showToast('Add at least one task first.', false);
+      return;
+    }
 
     setPosting(true);
 
-    const payload = {
-      status: 'active' as const,
-      tasks_data: subTasks,
-      total_fee_pts: totalFee,
-      created_at: new Date().toISOString(),
-    };
+    try {
+      const response = await fetch(`${FN_BASE}/tasks`, {
+        method: 'POST',
+        headers: FN_HEADERS,
+        body: JSON.stringify({
+          wallet: publicKey.toString(),
+          action: 'create',
+          tasks_data: subTasks,
+        }),
+      });
 
-    // Inspect this in your browser's DevTools → Console
-    console.log('Task Bundle Payload:');
-    console.log(JSON.stringify(payload, null, 2));
-
-    // Simulate network delay
-    setTimeout(() => {
+      const result = await response.json();
+      if (result.success) {
+        showToast(`Bundle posted! ${subTasks.length} sub-task${subTasks.length > 1 ? 's' : ''} · ${fmtPts(totalFee)} PTS (unactivated)`);
+        setSubTasks([]);
+      } else {
+        showToast(result.message || 'Failed to post task bundle.', false);
+      }
+    } catch (err: any) {
+      console.error('Error posting task bundle:', err);
+      showToast(err.message || 'A network error occurred.', false);
+    } finally {
       setPosting(false);
-      showToast(`Bundle posted! ${subTasks.length} sub-task${subTasks.length > 1 ? 's' : ''} · ${fmtPts(totalFee)} PTS`);
-      setSubTasks([]);
-    }, 1200);
+    }
   };
 
   return (

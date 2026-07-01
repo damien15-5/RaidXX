@@ -7,6 +7,7 @@ import TaskList from './pages/tasks/TaskList';
 import TaskUpload from './pages/tasks/TaskUpload';
 import TaskVerify from './pages/tasks/TaskVerify';
 import Faucet from './pages/Faucet';
+import AdminUser from './pages/AdminUser';
 import NotFound from './pages/404';
 
 const App = () => {
@@ -21,6 +22,9 @@ const App = () => {
           <Route path="/task/verify" element={<TaskVerify />} />
           <Route path="/faucet" element={<Faucet />} />
         </Route>
+
+        {/* Standalone Admin route (no bottom bar, completely separate interface) */}
+        <Route path="/admin_user" element={<AdminUser />} />
 
         {/* 404 — no bottom bar */}
         <Route path="*" element={<NotFound />} />

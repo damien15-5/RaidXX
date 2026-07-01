@@ -13,17 +13,14 @@ export const SOCIAL_PRICE_PER_1K: Record<SocialTaskName, number> = {
 // Flat rate for all quest types
 export const QUEST_PRICE_PER_1K = 300;
 
-// Calculate the total fee for a sub-task
+// Calculate the total fee for a sub-task (count * points_per_completion)
 export function calcFee(
   type: 'SOCIAL' | 'QUEST',
   taskName: SocialTaskName | null,
   count: number,
+  points: number = 5
 ): number {
-  const rate =
-    type === 'QUEST'
-      ? QUEST_PRICE_PER_1K
-      : SOCIAL_PRICE_PER_1K[taskName as SocialTaskName];
-  return Math.max(1, Math.ceil((count / 1000) * rate));
+  return count * points;
 }
 
 // Format large point numbers nicely

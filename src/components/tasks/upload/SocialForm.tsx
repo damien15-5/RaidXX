@@ -14,12 +14,13 @@ interface SocialFormProps {
 const SocialForm = ({ taskName, onSave, onClose }: SocialFormProps) => {
   const [url, setUrl]     = useState('');
   const [count, setCount] = useState(100); // default order count
+  const [points, setPoints] = useState(5); // default points per completion
 
   // Find display metadata for this task type
   const meta = SOCIAL_TASKS.find((t) => t.name === taskName)!;
 
   // Live fee preview
-  const fee = calcFee('SOCIAL', taskName, count);
+  const fee = calcFee('SOCIAL', taskName, count, points);
 
   // Build the sub-task object and hand it to the parent
   const handleSave = () => {
@@ -30,8 +31,9 @@ const SocialForm = ({ taskName, onSave, onClose }: SocialFormProps) => {
       task_name: taskName,
       target_url: url.trim(),
       count,
+      points,
       status: 'active',
-    });
+    } as any);
   };
 
   return (
@@ -62,13 +64,27 @@ const SocialForm = ({ taskName, onSave, onClose }: SocialFormProps) => {
           />
         </div>
 
+        {/* Points per completion input */}
+        <div>
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+            Points per completion (default: 5)
+          </label>
+          <input
+            type="number"
+            min={1}
+            value={points}
+            onChange={(e) => setPoints(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3.5 py-3 text-xs font-semibold focus:outline-none focus:border-brand-500 focus:bg-white transition-all font-mono"
+          />
+        </div>
+
         {/* Order count stepper */}
         <CountInput
           label="Number of orders"
           value={count}
           onChange={setCount}
           fee={fee}
-          rateLabel={`${fmtPts(SOCIAL_PRICE_PER_1K[taskName])} PTS / 1k`}
+          rateLabel={`${points} PTS per completion`}
         />
       </div>
 

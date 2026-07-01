@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL, SystemProgram, Transaction, PublicKey } from '@solana/web3.js';
 import WalletButton from '../components/WalletButton';
@@ -18,7 +17,14 @@ interface TransactionItem {
 }
 
 const DEVNET_GENESIS = 'EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG';
-const API_BASE = 'http://127.0.0.1:3001/api';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const FN_BASE = `${SUPABASE_URL}/functions/v1`;
+const FN_HEADERS = {
+  'Content-Type': 'application/json',
+  'apikey': SUPABASE_ANON_KEY,
+  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+};
 
 const formatPoints = (pts: number) => {
   if (pts > 0 && pts < 0.00001) {
@@ -49,17 +55,25 @@ const Wallet = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
+  // Task balance states
+  const [myTasks, setMyTasks] = useState<any[]>([]);
+  const [taskBalance, setTaskBalance] = useState(0);
+  const [showTaskBalanceSheet, setShowTaskBalanceSheet] = useState(false);
+  const [taskActionLoadingId, setTaskActionLoadingId] = useState<string | null>(null);
+
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 4000);
   };
 
-  // Fetch stats from Express backend
+  // Fetch stats from Supabase Edge Function
   const fetchUserData = useCallback(async () => {
     if (!publicKey) return;
     setLoadingData(true);
     try {
-      const res = await fetch(`${API_BASE}/user/${publicKey.toString()}`);
+      const res = await fetch(`${FN_BASE}/get-user?wallet=${publicKey.toString()}`, {
+        headers: FN_HEADERS,
+      });
       const data = await res.json();
       if (data.success) {
         setDbBalance(Number(data.user.sol_balance) || 0);
@@ -67,12 +81,99 @@ const Wallet = () => {
         setTransactions(data.transactions || []);
         setTreasuryAddress(data.treasuryAddress);
       }
+
+      // Fetch creator's task bundles
+      const tasksRes = await fetch(`${FN_BASE}/tasks?wallet=${publicKey.toString()}`, {
+        headers: FN_HEADERS,
+      });
+      const tasksData = await tasksRes.json();
+      if (tasksData.success) {
+        const creatorTasks = (tasksData.tasks || []).filter(
+          (t: any) => t.posted_by === publicKey.toString()
+        );
+        setMyTasks(creatorTasks);
+
+        // Compute Task Balance (sum of remaining points in active tasks / 10000)
+        let totalRemainingPoints = 0;
+        creatorTasks.forEach((t: any) => {
+          if (t.status === 'active' && t.tasks_data?.activated && !t.tasks_data?.cancelled) {
+            const subtasks = t.tasks_data?.tasks || [];
+            const completionCounts = t.completion_counts || {};
+            subtasks.forEach((st: any) => {
+              const completions = completionCounts[st.sub_task_id] || 0;
+              const remaining = Math.max(0, (Number(st.count) || 100) - completions);
+              totalRemainingPoints += remaining * (Number(st.points) || 5);
+            });
+          }
+        });
+        setTaskBalance(totalRemainingPoints / 10000);
+      }
     } catch (err) {
       console.error('Failed to fetch user data:', err);
     } finally {
       setLoadingData(false);
     }
   }, [publicKey]);
+
+  // Activate task bundle
+  const handleActivateTask = async (taskId: string) => {
+    if (!publicKey) return;
+    setTaskActionLoadingId(taskId);
+    try {
+      const res = await fetch(`${FN_BASE}/tasks`, {
+        method: 'POST',
+        headers: FN_HEADERS,
+        body: JSON.stringify({
+          wallet: publicKey.toString(),
+          action: 'start',
+          task_id: taskId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast('Task activated successfully! Balance deducted.');
+        await fetchUserData();
+        await fetchWalletBalance();
+      } else {
+        showToast(data.message || 'Failed to activate task.', 'error');
+      }
+    } catch (err: any) {
+      console.error(err);
+      showToast('Network error activating task.', 'error');
+    } finally {
+      setTaskActionLoadingId(null);
+    }
+  };
+
+  // Cancel task bundle and refund
+  const handleCancelTask = async (taskId: string) => {
+    if (!publicKey) return;
+    setTaskActionLoadingId(taskId);
+    try {
+      const res = await fetch(`${FN_BASE}/tasks`, {
+        method: 'POST',
+        headers: FN_HEADERS,
+        body: JSON.stringify({
+          wallet: publicKey.toString(),
+          action: 'cancel',
+          task_id: taskId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(`Task cancelled! Refunded +${Number(data.refund_sol).toFixed(4)} SOL to your balance.`);
+        await fetchUserData();
+        await fetchWalletBalance();
+      } else {
+        showToast(data.message || 'Failed to cancel task.', 'error');
+      }
+    } catch (err: any) {
+      console.error(err);
+      showToast('Network error cancelling task.', 'error');
+    } finally {
+      setTaskActionLoadingId(null);
+    }
+  };
 
   // Fetch on-chain wallet balance
   const fetchWalletBalance = useCallback(async () => {
@@ -150,9 +251,9 @@ const Wallet = () => {
       );
 
       showToast('Verifying transaction on platform...');
-      const res = await fetch(`${API_BASE}/deposit`, {
+      const res = await fetch(`${FN_BASE}/verify-deposit`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: FN_HEADERS,
         body: JSON.stringify({
           wallet: publicKey.toString(),
           signature,
@@ -207,10 +308,10 @@ const Wallet = () => {
     setLoadingWithdraw(true);
 
     try {
-      showToast('Processing withdrawal on backend...');
-      const res = await fetch(`${API_BASE}/withdraw`, {
+      showToast('Processing withdrawal...');
+      const res = await fetch(`${FN_BASE}/withdraw`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: FN_HEADERS,
         body: JSON.stringify({
           wallet: publicKey.toString(),
           amount,
@@ -229,7 +330,7 @@ const Wallet = () => {
       }
     } catch (err: any) {
       console.error(err);
-      showToast('Failed to connect to backend server.', 'error');
+      showToast('Failed to connect to the server. Please try again.', 'error');
     } finally {
       setLoadingWithdraw(false);
     }
@@ -345,21 +446,37 @@ const Wallet = () => {
         </div>
 
         {/* Sub-card stats */}
-        <div className="grid grid-cols-2 divide-x divide-gray-100 bg-white py-4 text-center">
+        <div className="grid grid-cols-3 divide-x divide-gray-100 bg-white py-4 text-center">
           <div>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1">Platform Balance</span>
+            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block mb-1">Platform</span>
             {connected && loadingData ? (
-              <div className="h-6 w-24 bg-gray-200/50 rounded-xl animate-pulse mx-auto mt-1" />
+              <div className="h-6 w-16 bg-gray-200/50 rounded-xl animate-pulse mx-auto mt-1" />
             ) : (
-              <span className="text-lg font-extrabold text-gray-900">{dbBalance.toFixed(4)} SOL</span>
+              <span className="text-sm font-extrabold text-gray-900">{dbBalance.toFixed(4)} SOL</span>
+            )}
+          </div>
+          <div className="cursor-pointer hover:bg-slate-50/50 transition-colors" onClick={() => {
+            if (!connected) {
+              showToast('Please connect your wallet first.', 'error');
+              return;
+            }
+            setShowTaskBalanceSheet(true);
+          }}>
+            <span className="text-[9px] text-brand-600 font-bold uppercase tracking-wider flex items-center justify-center gap-1 mb-1">
+              Task Bal <i className="fa-solid fa-arrow-up-right-from-square text-[8px]" />
+            </span>
+            {connected && loadingData ? (
+              <div className="h-6 w-16 bg-gray-200/50 rounded-xl animate-pulse mx-auto mt-1" />
+            ) : (
+              <span className="text-sm font-extrabold text-brand-600 underline decoration-dotted">{taskBalance.toFixed(4)} SOL</span>
             )}
           </div>
           <div>
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block mb-1">On-Chain Wallet</span>
+            <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider block mb-1">On-Chain</span>
             {connected && loadingData ? (
-              <div className="h-6 w-24 bg-gray-200/50 rounded-xl animate-pulse mx-auto mt-1" />
+              <div className="h-6 w-16 bg-gray-200/50 rounded-xl animate-pulse mx-auto mt-1" />
             ) : (
-              <span className="text-lg font-extrabold text-gray-900">{walletBalance.toFixed(4)} SOL</span>
+              <span className="text-sm font-extrabold text-gray-900">{walletBalance.toFixed(4)} SOL</span>
             )}
           </div>
         </div>
@@ -607,6 +724,160 @@ const Wallet = () => {
                 )}
               </button>
             </div>
+          </div>
+        </>
+      )}
+
+      {/* ---------------- VIEW TASK BALANCE SHEET (CREATOR DASHBOARD) ---------------- */}
+      {showTaskBalanceSheet && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => taskActionLoadingId === null && setShowTaskBalanceSheet(false)}
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-40"
+          />
+          {/* Sheet */}
+          <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto bg-white rounded-t-3xl shadow-xl z-50 pt-6 px-5 pb-28 border-t border-gray-100 animate-[slideUp_0.3s_ease-out] max-h-[85vh] overflow-y-auto">
+            {/* Sheet Handle */}
+            <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-5" />
+
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-base font-extrabold text-gray-900">Task Ad Campaigns</h3>
+              <span className="text-[10px] font-extrabold text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-full">
+                Locked: {taskBalance.toFixed(4)} SOL
+              </span>
+            </div>
+            <p className="text-[11px] text-gray-400 font-medium mb-4 leading-relaxed">
+              Activate your posted tasks or cancel active tasks to refund remaining incomplete budgets directly to your platform SOL balance.
+            </p>
+
+            <div className="flex flex-col gap-4">
+              {myTasks.length === 0 ? (
+                <div className="text-center py-10 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                  <i className="fa-solid fa-layer-group text-gray-300 text-lg mb-2 block" />
+                  <p className="text-xs font-bold text-gray-400">No campaigns found.</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Upload a task first from the Upload page.</p>
+                </div>
+              ) : (
+                myTasks.map((t: any) => {
+                  const isActivated = t.tasks_data?.activated;
+                  const isCancelled = t.tasks_data?.cancelled;
+                  const isActive = t.status === 'active' && isActivated && !isCancelled;
+                  const subtasks = t.tasks_data?.tasks || [];
+                  const completionCounts = t.completion_counts || {};
+
+                  // Calculate task bundle stats
+                  const totalPoints = subtasks.reduce((sum: number, st: any) => sum + (Number(st.points) || 5) * (Number(st.count) || 100), 0);
+                  const solCost = totalPoints / 10000;
+
+                  // Status details
+                  let statusLabel = 'Inactive (Pending Start)';
+                  let statusColor = 'bg-gray-100 text-gray-500 border-gray-200';
+                  if (isActive) {
+                    statusLabel = 'Active & Running';
+                    statusColor = 'bg-emerald-50 text-emerald-600 border-emerald-100';
+                  } else if (isCancelled) {
+                    statusLabel = 'Cancelled & Refunded';
+                    statusColor = 'bg-rose-50 text-rose-600 border-rose-100';
+                  } else if (isActivated && t.status === 'completed') {
+                    statusLabel = 'Completed';
+                    statusColor = 'bg-blue-50 text-blue-600 border-blue-100';
+                  }
+
+                  return (
+                    <div key={t.id} className="bg-white border border-gray-100 rounded-2xl p-4 shadow-xs">
+                      
+                      {/* Card Header */}
+                      <div className="flex items-center justify-between mb-3 border-b border-gray-50 pb-2">
+                        <div>
+                          <span className="text-[9px] font-mono text-gray-400 font-bold uppercase">ID: {t.id.slice(0, 8)}...{t.id.slice(-6)}</span>
+                          <span className="text-[9px] text-gray-400 block font-semibold mt-0.5">Created: {new Date(t.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <span className={`text-[9px] font-extrabold px-2.5 py-0.5 rounded-full border ${statusColor}`}>
+                          {statusLabel}
+                        </span>
+                      </div>
+
+                      {/* Subtasks breakdown */}
+                      <div className="flex flex-col gap-2.5 mb-4">
+                        {subtasks.map((st: any, idx: number) => {
+                          const completions = completionCounts[st.sub_task_id] || 0;
+                          const target = Number(st.count) || 100;
+                          const pct = Math.min(100, (completions / target) * 100);
+                          const isQuest = st.type === 'QUEST';
+
+                          return (
+                            <div key={st.sub_task_id || idx} className="bg-gray-50 p-2.5 rounded-xl border border-gray-100/50">
+                              <div className="flex items-center justify-between text-[10px] mb-1 font-bold text-gray-700">
+                                <span className="truncate max-w-[150px]">
+                                  {isQuest ? `Quest: ${st.question}` : `${st.task_name} Task`}
+                                </span>
+                                <span>{completions} / {target} ({st.points || 5} PTS)</span>
+                              </div>
+                              {/* Small progress bar */}
+                              <div className="w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div 
+                                  className="h-full bg-brand-500 rounded-full" 
+                                  style={{ width: `${pct}%` }} 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Action buttons */}
+                      {!isActivated && !isCancelled && (
+                        <button
+                          disabled={taskActionLoadingId !== null}
+                          onClick={() => handleActivateTask(t.id)}
+                          className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-100 disabled:text-gray-400 text-white font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-95"
+                        >
+                          {taskActionLoadingId === t.id ? (
+                            <>
+                              <i className="fa-solid fa-circle-notch fa-spin" />
+                              Activating...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fa-solid fa-bolt" />
+                              Start Task (-{solCost.toFixed(4)} SOL)
+                            </>
+                          )}
+                        </button>
+                      )}
+
+                      {isActive && (
+                        <button
+                          disabled={taskActionLoadingId !== null}
+                          onClick={() => handleCancelTask(t.id)}
+                          className="w-full py-2.5 bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold rounded-xl text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95"
+                        >
+                          {taskActionLoadingId === t.id ? (
+                            <>
+                              <i className="fa-solid fa-circle-notch fa-spin" />
+                              Cancelling...
+                            </>
+                          ) : (
+                            <>
+                              <i className="fa-solid fa-ban" />
+                              Cancel & Refund Remaining
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            <button
+              onClick={() => setShowTaskBalanceSheet(false)}
+              className="w-full mt-5 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl text-xs transition-all active:scale-98"
+            >
+              Close Dashboard
+            </button>
           </div>
         </>
       )}

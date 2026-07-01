@@ -39,4 +39,9 @@ export interface TaskBundle {
   status: 'active' | 'submitted';
   created_at: string;           // ISO timestamp
   tasks_data: SubTask[];        // the ordered list of sub-tasks
+  user_submissions?: { sub_task_id: string; status: string }[];
+  completion_counts?: Record<string, number>;
+  activated?: boolean;
+  cancelled?: boolean;
 }
+
