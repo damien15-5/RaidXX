@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import type { SocialTaskName, SocialSubTask } from '../types';
-import { SOCIAL_TASKS, SOCIAL_PRICE_PER_1K, calcFee, fmtPts, uid } from '../pricing';
+import { SOCIAL_TASKS, calcFee, uid } from '../pricing';
 import BottomSheet from '../BottomSheet';
 import CountInput from './CountInput';
 

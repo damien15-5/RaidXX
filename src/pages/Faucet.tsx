@@ -111,7 +111,6 @@ const Faucet = () => {
   };
 
   // Helpers
-  const canClaim = claimsLeft === null || claimsLeft > 0;
   const claimsLabel =
     claimsLeft === null
       ? null

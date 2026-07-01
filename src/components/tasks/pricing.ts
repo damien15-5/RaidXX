@@ -15,8 +15,8 @@ export const QUEST_PRICE_PER_1K = 300;
 
 // Calculate the total fee for a sub-task (count * points_per_completion)
 export function calcFee(
-  type: 'SOCIAL' | 'QUEST',
-  taskName: SocialTaskName | null,
+  _type: 'SOCIAL' | 'QUEST',
+  _taskName: SocialTaskName | null,
   count: number,
   points: number = 5
 ): number {

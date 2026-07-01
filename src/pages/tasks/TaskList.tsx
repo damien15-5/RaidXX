@@ -25,7 +25,7 @@ const RaidXLogo = () => (
 );
 
 const TaskList = () => {
-  const { publicKey, connected } = useWallet();
+  const { publicKey } = useWallet();
   const [filter, setFilter] = useState<FilterTab>('all');
   const [selected, setSelected] = useState<TaskBundle | null>(null);
   const [bundles, setBundles] = useState<TaskBundle[]>([]);
