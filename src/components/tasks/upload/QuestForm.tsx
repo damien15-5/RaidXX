@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { QuestSubTask } from '../types';
-import { QUEST_PRICE_PER_1K, calcFee, fmtPts, uid } from '../pricing';
+import { calcFee, uid } from '../pricing';
 import BottomSheet from '../BottomSheet';
 import CountInput from './CountInput';
 import Toggle from './Toggle';

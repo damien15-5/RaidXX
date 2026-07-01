@@ -24,8 +24,8 @@
 
 import { useState, useCallback } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import type { SubTask, SocialSubTask, SocialTaskName } from '../../components/tasks/types';
-import { calcFee, fmtPts } from '../../components/tasks/pricing';
+import type { SubTask, SocialTaskName } from '../../components/tasks/types';
+import { fmtPts } from '../../components/tasks/pricing';
 
 // Upload-specific components
 import TypeSelector from '../../components/tasks/upload/TypeSelector';
